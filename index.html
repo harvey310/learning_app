@@ -1,0 +1,737 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>七巧板合作拼图练习</title>
+  <style>
+    :root {
+      --bg: #f7f3ea;
+      --ink: #172033;
+      --muted: #657086;
+      --line: #ded6c7;
+      --panel: #fffaf1;
+      --primary: #1769ff;
+      --primary-dark: #0f4fca;
+      --ok: #18865c;
+      --shadow: 0 18px 50px rgba(49, 40, 26, 0.13);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      font-family: "Microsoft YaHei", "PingFang SC", system-ui, -apple-system, sans-serif;
+      background:
+        radial-gradient(circle at 10% 8%, rgba(255, 203, 66, 0.24), transparent 24rem),
+        radial-gradient(circle at 90% 5%, rgba(23, 105, 255, 0.14), transparent 24rem),
+        linear-gradient(135deg, #fff9ee 0%, var(--bg) 56%, #edf4ff 100%);
+      overflow-x: hidden;
+    }
+
+    button {
+      font: inherit;
+    }
+
+    .app {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 26px 0;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 20px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .logo {
+      width: 48px;
+      height: 48px;
+      display: grid;
+      place-items: center;
+      color: white;
+      font-weight: 900;
+      border-radius: 10px;
+      background: conic-gradient(from 45deg, #ffcb42, #ff6b55, #28b67e, #1769ff, #8b5cf6, #ffcb42);
+      box-shadow: 0 10px 24px rgba(23, 105, 255, 0.2);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(24px, 3vw, 38px);
+      letter-spacing: 0;
+    }
+
+    .subtitle {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .status {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .pill {
+      min-height: 40px;
+      padding: 8px 14px;
+      border: 1px solid rgba(23, 32, 51, 0.1);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.72);
+      color: var(--ink);
+      font-weight: 800;
+      white-space: nowrap;
+      backdrop-filter: blur(12px);
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 300px;
+      gap: 18px;
+      align-items: stretch;
+    }
+
+    .board-card,
+    .side-card {
+      background: rgba(255, 250, 241, 0.9);
+      border: 1px solid rgba(49, 40, 26, 0.12);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+
+    .board-card {
+      padding: 18px;
+      min-width: 0;
+    }
+
+    .board-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 14px;
+    }
+
+    .board-title {
+      margin: 0;
+      font-size: clamp(22px, 3vw, 32px);
+      letter-spacing: 0;
+    }
+
+    .board-note {
+      margin: 6px 0 0;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .success {
+      display: none;
+      min-height: 42px;
+      align-items: center;
+      padding: 9px 13px;
+      border-radius: 999px;
+      color: #063b28;
+      background: #dffbed;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .success.show {
+      display: inline-flex;
+    }
+
+    .board-wrap {
+      width: 100%;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background:
+        linear-gradient(rgba(23, 32, 51, 0.055) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(23, 32, 51, 0.055) 1px, transparent 1px),
+        #fffdf8;
+      background-size: 28px 28px;
+      touch-action: none;
+    }
+
+    svg {
+      display: block;
+      width: 100%;
+      height: min(68vh, 650px);
+      min-height: 520px;
+      user-select: none;
+    }
+
+    .target-piece {
+      fill: rgba(23, 32, 51, 0.09);
+      stroke: rgba(23, 32, 51, 0.28);
+      stroke-width: 3;
+      stroke-dasharray: 8 7;
+      stroke-linejoin: round;
+    }
+
+    .piece {
+      cursor: grab;
+      stroke: rgba(255, 255, 255, 0.92);
+      stroke-width: 3;
+      stroke-linejoin: round;
+      filter: drop-shadow(0 10px 10px rgba(31, 26, 17, 0.2));
+      transition: filter 160ms ease, opacity 160ms ease;
+    }
+
+    .piece:active {
+      cursor: grabbing;
+    }
+
+    .piece.dragging {
+      filter: drop-shadow(0 16px 16px rgba(23, 105, 255, 0.32));
+    }
+
+    .piece.snapped {
+      cursor: default;
+      filter: drop-shadow(0 6px 7px rgba(24, 134, 92, 0.18));
+    }
+
+    .side-card {
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .panel-title {
+      margin: 0 0 8px;
+      font-size: 18px;
+    }
+
+    .steps {
+      margin: 0;
+      padding-left: 20px;
+      color: var(--muted);
+      line-height: 1.8;
+    }
+
+    .progress-block {
+      display: grid;
+      gap: 9px;
+    }
+
+    .progress-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    .progress {
+      height: 12px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: #e8dfcf;
+    }
+
+    .progress span {
+      display: block;
+      width: 0%;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, #1769ff, #28b67e);
+      transition: width 220ms ease;
+    }
+
+    .actions {
+      display: grid;
+      gap: 10px;
+      margin-top: auto;
+    }
+
+    .primary-button,
+    .ghost-button,
+    .success-button {
+      min-height: 46px;
+      border-radius: 8px;
+      padding: 11px 15px;
+      cursor: pointer;
+      font-weight: 900;
+    }
+
+    .primary-button {
+      color: white;
+      background: var(--primary);
+      border: 0;
+      box-shadow: 0 10px 22px rgba(23, 105, 255, 0.22);
+    }
+
+    .primary-button:hover {
+      background: var(--primary-dark);
+    }
+
+    .primary-button:disabled {
+      cursor: not-allowed;
+      background: #9fb8ee;
+      box-shadow: none;
+    }
+
+    .success-button {
+      color: white;
+      background: var(--ok);
+      border: 0;
+      box-shadow: 0 10px 22px rgba(24, 134, 92, 0.2);
+    }
+
+    .ghost-button {
+      color: var(--ink);
+      background: rgba(255, 255, 255, 0.66);
+      border: 1px solid rgba(23, 32, 51, 0.12);
+    }
+
+    .tip {
+      margin: 0;
+      padding: 13px 14px;
+      border-radius: 8px;
+      color: var(--muted);
+      background: rgba(255, 255, 255, 0.68);
+      border: 1px solid #e3d9c7;
+      line-height: 1.7;
+      font-size: 14px;
+    }
+
+    @media (max-width: 920px) {
+      .topbar {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .status {
+        justify-content: flex-start;
+      }
+
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .side-card {
+        display: block;
+      }
+
+      .actions {
+        grid-template-columns: 1fr 1fr;
+        margin-top: 16px;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .app {
+        width: min(100% - 20px, 1180px);
+        padding: 16px 0;
+      }
+
+      .board-card,
+      .side-card {
+        padding: 14px;
+      }
+
+      .board-head {
+        flex-direction: column;
+      }
+
+      svg {
+        height: 560px;
+        min-height: 560px;
+      }
+
+      .actions {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="topbar">
+      <div class="brand">
+        <div class="logo" aria-hidden="true">七</div>
+        <div>
+          <h1>七巧板合作拼图练习</h1>
+          <p class="subtitle">两人一组，合作移动七块拼板，把它们拼到灰色目标轮廓里。</p>
+        </div>
+      </div>
+      <div class="status" aria-label="当前练习状态">
+        <div class="pill" id="roundPill">第 1 / 6 道</div>
+        <div class="pill" id="piecesPill">已放好 0 / 7 块</div>
+      </div>
+    </header>
+
+    <section class="layout">
+      <section class="board-card">
+        <div class="board-head">
+          <div>
+            <h2 class="board-title" id="puzzleTitle">拼图 1：正方形</h2>
+            <p class="board-note" id="puzzleNote">把下面的七块拼板拖到上方灰色轮廓中。</p>
+          </div>
+          <div class="success" id="successBadge">拼图成功</div>
+        </div>
+
+        <div class="board-wrap">
+          <svg id="board" viewBox="0 0 900 650" role="img" aria-labelledby="boardLabel">
+            <title id="boardLabel">七巧板合作拼图操作区</title>
+            <g id="targets"></g>
+            <g id="pieces"></g>
+          </svg>
+        </div>
+      </section>
+
+      <aside class="side-card">
+        <section>
+          <h3 class="panel-title">课堂玩法</h3>
+          <ol class="steps">
+            <li>两名学生一起观察目标图。</li>
+            <li>合作拖动七块彩色拼板。</li>
+            <li>拼板靠近正确位置会自动吸附。</li>
+            <li>全部放好后，本题即完成。</li>
+            <li>下一组上来后，直接点下一道。</li>
+          </ol>
+        </section>
+
+        <section class="progress-block" aria-label="拼图进度">
+          <div class="progress-row">
+            <span id="progressText">完成 0 / 7 块</span>
+            <span id="completeText">0%</span>
+          </div>
+          <div class="progress" aria-hidden="true"><span id="progressBar"></span></div>
+        </section>
+
+        <p class="tip" id="tipText">提示：先看整体轮廓，再分工移动大三角和小三角。</p>
+
+        <div class="actions">
+          <button class="success-button" id="finishButton" type="button">完成本题</button>
+          <button class="primary-button" id="nextButton" type="button" disabled>下一道</button>
+          <button class="ghost-button" id="resetButton" type="button">重置本题</button>
+          <button class="ghost-button" id="prevButton" type="button">上一道</button>
+        </div>
+      </aside>
+    </section>
+  </main>
+
+  <script>
+    const colors = ["#1769ff", "#ff6b55", "#ffcb42", "#28b67e", "#8b5cf6", "#22b8cf", "#ff9f1c"];
+
+    const puzzles = [
+      {
+        title: "正方形",
+        note: "经典七巧板正方形，适合第一组熟悉拖动和吸附。",
+        tip: "提示：先把四个角补出来，中间再慢慢调整。",
+        pieces: [
+          "70,70 210,70 70,210",
+          "350,70 350,210 210,70",
+          "70,210 140,140 210,210",
+          "210,70 280,140 210,210 140,140",
+          "280,140 350,210 280,280 210,210",
+          "70,210 210,210 210,350",
+          "210,350 350,210 350,350"
+        ]
+      },
+      {
+        title: "小房子",
+        note: "观察屋顶、墙体和底部，适合两人分工拼上半部分和下半部分。",
+        tip: "提示：屋顶先拼出来，房子的主体会更容易对齐。",
+        pieces: [
+          "210,58 322,170 98,170",
+          "98,170 210,282 98,282",
+          "322,170 322,282 210,282",
+          "154,226 210,170 266,226 210,282",
+          "98,282 154,338 98,338",
+          "322,282 322,338 266,338",
+          "154,338 266,338 210,282"
+        ]
+      },
+      {
+        title: "小火箭",
+        note: "找到尖尖的头部、左右小翼和尾部火焰。",
+        tip: "提示：先放火箭头，再对称地摆左右两侧。",
+        pieces: [
+          "210,38 278,142 142,142",
+          "142,142 210,210 142,278 74,210",
+          "278,142 346,210 278,278 210,210",
+          "142,278 210,210 278,278 210,346",
+          "74,210 142,278 74,310",
+          "346,210 278,278 346,310",
+          "174,346 210,310 246,346 210,382"
+        ]
+      },
+      {
+        title: "小鸟",
+        note: "注意鸟嘴、翅膀和尾巴的位置关系。",
+        tip: "提示：鸟嘴在最右边，翅膀是两块较大的三角形。",
+        pieces: [
+          "72,176 210,96 176,232",
+          "210,96 348,176 244,232",
+          "176,232 210,164 244,232",
+          "176,232 244,232 244,300 176,300",
+          "244,300 312,334 244,368",
+          "176,300 108,334 176,368",
+          "348,176 382,144 382,208"
+        ]
+      },
+      {
+        title: "小猫",
+        note: "先找两只耳朵，再拼身体和尾巴。",
+        tip: "提示：两个顶部小三角就是耳朵，尾巴在右侧。",
+        pieces: [
+          "120,72 176,128 64,128",
+          "244,128 300,72 356,128",
+          "176,128 244,128 244,196 176,196",
+          "176,196 244,196 312,300 108,300",
+          "108,300 210,196 210,366",
+          "210,366 312,300 312,366",
+          "312,300 372,270 344,338"
+        ]
+      },
+      {
+        title: "小鱼",
+        note: "鱼头、身体和尾巴都比较清楚，适合作为轮换练习。",
+        tip: "提示：尾巴在左边，鱼头在右边，先定方向再移动。",
+        pieces: [
+          "68,210 154,130 154,290",
+          "154,130 292,210 154,290",
+          "292,210 376,150 376,270",
+          "154,130 222,130 222,210 154,210",
+          "154,210 222,210 154,290",
+          "222,210 292,210 222,280",
+          "68,210 28,170 28,250"
+        ]
+      }
+    ];
+
+    const startPositions = [
+      { x: 110, y: 505 },
+      { x: 300, y: 505 },
+      { x: 485, y: 505 },
+      { x: 675, y: 505 },
+      { x: 160, y: 600 },
+      { x: 395, y: 600 },
+      { x: 620, y: 600 }
+    ];
+
+    const targetOffset = { x: 250, y: 35 };
+    const trayOffset = { x: 0, y: 0 };
+    const snapDistance = 34;
+
+    const board = document.querySelector("#board");
+    const targetsEl = document.querySelector("#targets");
+    const piecesEl = document.querySelector("#pieces");
+    const roundPill = document.querySelector("#roundPill");
+    const piecesPill = document.querySelector("#piecesPill");
+    const puzzleTitle = document.querySelector("#puzzleTitle");
+    const puzzleNote = document.querySelector("#puzzleNote");
+    const progressText = document.querySelector("#progressText");
+    const completeText = document.querySelector("#completeText");
+    const progressBar = document.querySelector("#progressBar");
+    const successBadge = document.querySelector("#successBadge");
+    const tipText = document.querySelector("#tipText");
+    const finishButton = document.querySelector("#finishButton");
+    const nextButton = document.querySelector("#nextButton");
+    const resetButton = document.querySelector("#resetButton");
+    const prevButton = document.querySelector("#prevButton");
+
+    const state = {
+      puzzleIndex: 0,
+      active: null,
+      pieces: []
+    };
+
+    function makePolygon(points, className, fill) {
+      const polygon = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
+      polygon.setAttribute("points", points);
+      polygon.setAttribute("class", className);
+      if (fill) polygon.setAttribute("fill", fill);
+      return polygon;
+    }
+
+    function pointBounds(points) {
+      const coords = points.split(" ").map((pair) => pair.split(",").map(Number));
+      const xs = coords.map((coord) => coord[0]);
+      const ys = coords.map((coord) => coord[1]);
+      const minX = Math.min(...xs);
+      const maxX = Math.max(...xs);
+      const minY = Math.min(...ys);
+      const maxY = Math.max(...ys);
+      return {
+        cx: minX + (maxX - minX) / 2,
+        cy: minY + (maxY - minY) / 2
+      };
+    }
+
+    function setTransform(item) {
+      item.node.setAttribute("transform", `translate(${item.x} ${item.y})`);
+    }
+
+    function boardPoint(event) {
+      const point = board.createSVGPoint();
+      point.x = event.clientX;
+      point.y = event.clientY;
+      return point.matrixTransform(board.getScreenCTM().inverse());
+    }
+
+    function updateProgress() {
+      const done = state.pieces.filter((piece) => piece.snapped).length;
+      const percent = Math.round((done / 7) * 100);
+      piecesPill.textContent = `已放好 ${done} / 7 块`;
+      progressText.textContent = `完成 ${done} / 7 块`;
+      completeText.textContent = `${percent}%`;
+      progressBar.style.width = `${percent}%`;
+
+      const completed = done === 7;
+      successBadge.classList.toggle("show", completed);
+      nextButton.disabled = !completed;
+      finishButton.textContent = completed ? "本题已完成" : "完成本题";
+    }
+
+    function completePuzzle() {
+      state.pieces.forEach((piece) => {
+        piece.x = piece.targetX;
+        piece.y = piece.targetY;
+        piece.snapped = true;
+        piece.node.classList.add("snapped");
+        setTransform(piece);
+      });
+      updateProgress();
+    }
+
+    function resetPuzzle() {
+      renderPuzzle(state.puzzleIndex);
+    }
+
+    function renderPuzzle(index) {
+      const puzzle = puzzles[index];
+      state.puzzleIndex = index;
+      state.active = null;
+      state.pieces = [];
+      targetsEl.innerHTML = "";
+      piecesEl.innerHTML = "";
+
+      roundPill.textContent = `第 ${index + 1} / ${puzzles.length} 道`;
+      puzzleTitle.textContent = `拼图 ${index + 1}：${puzzle.title}`;
+      puzzleNote.textContent = puzzle.note;
+      tipText.textContent = puzzle.tip;
+      successBadge.classList.remove("show");
+      prevButton.disabled = index === 0;
+      nextButton.textContent = index === puzzles.length - 1 ? "回到第一道" : "下一道";
+
+      puzzle.pieces.forEach((points, pieceIndex) => {
+        const target = makePolygon(points, "target-piece");
+        target.setAttribute("transform", `translate(${targetOffset.x} ${targetOffset.y})`);
+        targetsEl.appendChild(target);
+
+        const node = makePolygon(points, "piece", colors[pieceIndex]);
+        const start = startPositions[pieceIndex];
+        const bounds = pointBounds(points);
+        const item = {
+          id: pieceIndex,
+          node,
+          x: start.x - bounds.cx,
+          y: start.y - bounds.cy,
+          startX: start.x - bounds.cx,
+          startY: start.y - bounds.cy,
+          targetX: targetOffset.x,
+          targetY: targetOffset.y,
+          snapped: false
+        };
+        setTransform(item);
+        node.dataset.index = pieceIndex;
+        piecesEl.appendChild(node);
+        state.pieces.push(item);
+      });
+
+      updateProgress();
+    }
+
+    function startDrag(event) {
+      const node = event.target.closest(".piece");
+      if (!node) return;
+
+      const piece = state.pieces[Number(node.dataset.index)];
+      if (!piece || piece.snapped) return;
+
+      const pointer = boardPoint(event);
+      state.active = {
+        piece,
+        pointerId: event.pointerId,
+        dx: pointer.x - piece.x,
+        dy: pointer.y - piece.y
+      };
+      node.classList.add("dragging");
+      piecesEl.appendChild(node);
+      node.setPointerCapture(event.pointerId);
+    }
+
+    function moveDrag(event) {
+      if (!state.active || state.active.pointerId !== event.pointerId) return;
+
+      const pointer = boardPoint(event);
+      const piece = state.active.piece;
+      piece.x = pointer.x - state.active.dx;
+      piece.y = pointer.y - state.active.dy;
+      setTransform(piece);
+    }
+
+    function endDrag(event) {
+      if (!state.active || state.active.pointerId !== event.pointerId) return;
+
+      const piece = state.active.piece;
+      const distance = Math.hypot(piece.x - piece.targetX, piece.y - piece.targetY);
+      piece.node.classList.remove("dragging");
+
+      if (distance < snapDistance) {
+        piece.x = piece.targetX;
+        piece.y = piece.targetY;
+        piece.snapped = true;
+        piece.node.classList.add("snapped");
+        setTransform(piece);
+      }
+
+      state.active = null;
+      updateProgress();
+    }
+
+    function goNext() {
+      const next = state.puzzleIndex === puzzles.length - 1 ? 0 : state.puzzleIndex + 1;
+      renderPuzzle(next);
+    }
+
+    function goPrev() {
+      if (state.puzzleIndex > 0) renderPuzzle(state.puzzleIndex - 1);
+    }
+
+    board.addEventListener("pointerdown", startDrag);
+    board.addEventListener("pointermove", moveDrag);
+    board.addEventListener("pointerup", endDrag);
+    board.addEventListener("pointercancel", endDrag);
+    finishButton.addEventListener("click", completePuzzle);
+    nextButton.addEventListener("click", goNext);
+    resetButton.addEventListener("click", resetPuzzle);
+    prevButton.addEventListener("click", goPrev);
+
+    renderPuzzle(0);
+  </script>
+</body>
+</html>
