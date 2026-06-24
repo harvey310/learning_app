@@ -1,20 +1,22 @@
 <!doctype html>
 <html lang="zh-CN">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>七巧板合作拼图练习</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>七巧板合作拼图闯关</title>
   <style>
     :root {
-      --bg: #f7f3ea;
-      --ink: #172033;
-      --muted: #657086;
-      --line: #ded6c7;
-      --panel: #fffaf1;
-      --primary: #1769ff;
-      --primary-dark: #0f4fca;
-      --ok: #18865c;
-      --shadow: 0 18px 50px rgba(49, 40, 26, 0.13);
+      --bg: #f6fbff;
+      --ink: #18313d;
+      --muted: #5d7580;
+      --line: #cfe0e6;
+      --panel: #ffffff;
+      --teal: #12a6a3;
+      --teal-dark: #07807f;
+      --gold: #ffc928;
+      --success: #21a66b;
+      --danger: #e45656;
+      --shadow: 0 12px 30px rgba(20, 55, 70, 0.12);
     }
 
     * {
@@ -25,713 +27,829 @@
       margin: 0;
       min-height: 100vh;
       color: var(--ink);
-      font-family: "Microsoft YaHei", "PingFang SC", system-ui, -apple-system, sans-serif;
+      font-family: "Microsoft YaHei", "PingFang SC", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       background:
-        radial-gradient(circle at 10% 8%, rgba(255, 203, 66, 0.24), transparent 24rem),
-        radial-gradient(circle at 90% 5%, rgba(23, 105, 255, 0.14), transparent 24rem),
-        linear-gradient(135deg, #fff9ee 0%, var(--bg) 56%, #edf4ff 100%);
-      overflow-x: hidden;
-    }
-
-    button {
-      font: inherit;
+        radial-gradient(circle at 12% 16%, rgba(18, 166, 163, 0.14), transparent 26%),
+        linear-gradient(180deg, #fafdff 0%, var(--bg) 100%);
     }
 
     .app {
-      width: min(1180px, calc(100% - 32px));
+      width: min(1280px, 100%);
       margin: 0 auto;
-      padding: 26px 0;
+      padding: 18px;
     }
 
-    .topbar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 18px;
-      margin-bottom: 20px;
-    }
-
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      min-width: 0;
-    }
-
-    .logo {
-      width: 48px;
-      height: 48px;
+    header {
       display: grid;
-      place-items: center;
-      color: white;
-      font-weight: 900;
-      border-radius: 10px;
-      background: conic-gradient(from 45deg, #ffcb42, #ff6b55, #28b67e, #1769ff, #8b5cf6, #ffcb42);
-      box-shadow: 0 10px 24px rgba(23, 105, 255, 0.2);
+      grid-template-columns: 1fr auto;
+      gap: 16px;
+      align-items: end;
+      margin-bottom: 14px;
     }
 
     h1 {
-      margin: 0;
+      margin: 0 0 6px;
       font-size: clamp(24px, 3vw, 38px);
-      letter-spacing: 0;
+      line-height: 1.1;
     }
 
-    .subtitle {
-      margin: 4px 0 0;
+    .sub {
+      margin: 0;
       color: var(--muted);
-      font-size: 14px;
+      font-size: 15px;
     }
 
-    .status {
+    .score {
       display: flex;
+      gap: 10px;
       align-items: center;
       justify-content: flex-end;
-      gap: 10px;
       flex-wrap: wrap;
     }
 
     .pill {
-      min-height: 40px;
-      padding: 8px 14px;
-      border: 1px solid rgba(23, 32, 51, 0.1);
+      display: inline-flex;
+      min-height: 36px;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 12px;
+      border: 1px solid var(--line);
       border-radius: 999px;
-      background: rgba(255, 255, 255, 0.72);
-      color: var(--ink);
-      font-weight: 800;
+      background: rgba(255, 255, 255, 0.78);
+      font-weight: 700;
       white-space: nowrap;
-      backdrop-filter: blur(12px);
     }
 
-    .layout {
+    .pill strong {
+      color: var(--teal-dark);
+    }
+
+    main {
       display: grid;
-      grid-template-columns: minmax(0, 1fr) 300px;
-      gap: 18px;
+      grid-template-columns: minmax(0, 1fr) 280px;
+      gap: 16px;
       align-items: stretch;
     }
 
-    .board-card,
-    .side-card {
-      background: rgba(255, 250, 241, 0.9);
-      border: 1px solid rgba(49, 40, 26, 0.12);
-      border-radius: 8px;
-      box-shadow: var(--shadow);
-    }
-
-    .board-card {
-      padding: 18px;
-      min-width: 0;
-    }
-
-    .board-head {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: 16px;
-      margin-bottom: 14px;
-    }
-
-    .board-title {
-      margin: 0;
-      font-size: clamp(22px, 3vw, 32px);
-      letter-spacing: 0;
-    }
-
-    .board-note {
-      margin: 6px 0 0;
-      color: var(--muted);
-      line-height: 1.6;
-    }
-
-    .success {
-      display: none;
-      min-height: 42px;
-      align-items: center;
-      padding: 9px 13px;
-      border-radius: 999px;
-      color: #063b28;
-      background: #dffbed;
-      font-weight: 900;
-      white-space: nowrap;
-    }
-
-    .success.show {
-      display: inline-flex;
-    }
-
-    .board-wrap {
-      width: 100%;
-      overflow: hidden;
+    .stage-wrap {
       border: 1px solid var(--line);
       border-radius: 8px;
-      background:
-        linear-gradient(rgba(23, 32, 51, 0.055) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(23, 32, 51, 0.055) 1px, transparent 1px),
-        #fffdf8;
-      background-size: 28px 28px;
-      touch-action: none;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      overflow: hidden;
     }
 
-    svg {
+    canvas {
       display: block;
       width: 100%;
-      height: min(68vh, 650px);
-      min-height: 520px;
-      user-select: none;
-    }
-
-    .target-piece {
-      fill: rgba(23, 32, 51, 0.09);
-      stroke: rgba(23, 32, 51, 0.28);
-      stroke-width: 3;
-      stroke-dasharray: 8 7;
-      stroke-linejoin: round;
-    }
-
-    .piece {
+      aspect-ratio: 1100 / 680;
+      touch-action: none;
+      background:
+        linear-gradient(90deg, rgba(18, 166, 163, 0.08) 0 28%, transparent 28%),
+        linear-gradient(180deg, #ffffff 0%, #f8fcff 100%);
       cursor: grab;
-      stroke: rgba(255, 255, 255, 0.92);
-      stroke-width: 3;
-      stroke-linejoin: round;
-      filter: drop-shadow(0 10px 10px rgba(31, 26, 17, 0.2));
-      transition: filter 160ms ease, opacity 160ms ease;
     }
 
-    .piece:active {
+    canvas.dragging {
       cursor: grabbing;
     }
 
-    .piece.dragging {
-      filter: drop-shadow(0 16px 16px rgba(23, 105, 255, 0.32));
-    }
-
-    .piece.snapped {
-      cursor: default;
-      filter: drop-shadow(0 6px 7px rgba(24, 134, 92, 0.18));
-    }
-
-    .side-card {
-      padding: 18px;
+    aside {
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 12px;
     }
 
-    .panel-title {
-      margin: 0 0 8px;
+    .panel {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.86);
+      box-shadow: var(--shadow);
+      padding: 14px;
+    }
+
+    .panel h2 {
+      margin: 0 0 10px;
       font-size: 18px;
     }
 
-    .steps {
+    .level-name {
       margin: 0;
-      padding-left: 20px;
-      color: var(--muted);
-      line-height: 1.8;
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--teal-dark);
     }
 
-    .progress-block {
-      display: grid;
-      gap: 9px;
-    }
-
-    .progress-row {
-      display: flex;
-      justify-content: space-between;
-      gap: 12px;
+    .hint {
+      margin: 8px 0 0;
       color: var(--muted);
       font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .btn-row {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    button {
+      min-height: 42px;
+      border: 0;
+      border-radius: 8px;
+      background: var(--teal);
+      color: white;
+      font: inherit;
       font-weight: 800;
+      cursor: pointer;
+      transition: transform 0.12s ease, background 0.12s ease, opacity 0.12s ease;
+    }
+
+    button:hover:not(:disabled) {
+      transform: translateY(-1px);
+      background: var(--teal-dark);
+    }
+
+    button.secondary {
+      background: #e7f3f5;
+      color: var(--ink);
+    }
+
+    button.secondary:hover:not(:disabled) {
+      background: #d5ebef;
+    }
+
+    button:disabled {
+      cursor: not-allowed;
+      opacity: 0.45;
+    }
+
+    .next {
+      width: 100%;
+      margin-top: 8px;
+      background: var(--success);
     }
 
     .progress {
       height: 12px;
       overflow: hidden;
       border-radius: 999px;
-      background: #e8dfcf;
+      background: #e5eef2;
     }
 
-    .progress span {
-      display: block;
+    .bar {
       width: 0%;
       height: 100%;
       border-radius: inherit;
-      background: linear-gradient(90deg, #1769ff, #28b67e);
-      transition: width 220ms ease;
+      background: linear-gradient(90deg, var(--gold), var(--success));
+      transition: width 0.25s ease;
     }
 
-    .actions {
+    .players {
       display: grid;
-      gap: 10px;
-      margin-top: auto;
+      gap: 8px;
     }
 
-    .primary-button,
-    .ghost-button,
-    .success-button {
-      min-height: 46px;
+    .player {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 10px;
+      align-items: start;
+      padding: 10px;
+      border: 1px solid var(--line);
       border-radius: 8px;
-      padding: 11px 15px;
-      cursor: pointer;
+      background: #fbfdff;
+    }
+
+    .badge {
+      display: grid;
+      width: 30px;
+      height: 30px;
+      place-items: center;
+      border-radius: 50%;
+      color: #fff;
       font-weight: 900;
     }
 
-    .primary-button {
-      color: white;
-      background: var(--primary);
-      border: 0;
-      box-shadow: 0 10px 22px rgba(23, 105, 255, 0.22);
+    .badge.a {
+      background: #ff7a21;
     }
 
-    .primary-button:hover {
-      background: var(--primary-dark);
+    .badge.b {
+      background: #1a9fd6;
     }
 
-    .primary-button:disabled {
-      cursor: not-allowed;
-      background: #9fb8ee;
-      box-shadow: none;
-    }
-
-    .success-button {
-      color: white;
-      background: var(--ok);
-      border: 0;
-      box-shadow: 0 10px 22px rgba(24, 134, 92, 0.2);
-    }
-
-    .ghost-button {
-      color: var(--ink);
-      background: rgba(255, 255, 255, 0.66);
-      border: 1px solid rgba(23, 32, 51, 0.12);
-    }
-
-    .tip {
+    .player p {
       margin: 0;
-      padding: 13px 14px;
-      border-radius: 8px;
       color: var(--muted);
-      background: rgba(255, 255, 255, 0.68);
-      border: 1px solid #e3d9c7;
-      line-height: 1.7;
-      font-size: 14px;
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .status {
+      min-height: 46px;
+      margin: 0;
+      padding: 10px 12px;
+      border-radius: 8px;
+      background: #f0f8f7;
+      color: var(--teal-dark);
+      font-weight: 800;
+      line-height: 1.5;
+    }
+
+    .status.done {
+      background: #edf9f2;
+      color: var(--success);
     }
 
     @media (max-width: 920px) {
-      .topbar {
-        align-items: flex-start;
-        flex-direction: column;
-      }
-
-      .status {
-        justify-content: flex-start;
-      }
-
-      .layout {
+      header,
+      main {
         grid-template-columns: 1fr;
       }
 
-      .side-card {
-        display: block;
+      .score {
+        justify-content: flex-start;
       }
 
-      .actions {
-        grid-template-columns: 1fr 1fr;
-        margin-top: 16px;
+      aside {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
       }
     }
 
-    @media (max-width: 560px) {
+    @media (max-width: 620px) {
       .app {
-        width: min(100% - 20px, 1180px);
-        padding: 16px 0;
+        padding: 10px;
       }
 
-      .board-card,
-      .side-card {
-        padding: 14px;
+      aside {
+        grid-template-columns: 1fr;
       }
 
-      .board-head {
-        flex-direction: column;
-      }
-
-      svg {
-        height: 560px;
-        min-height: 560px;
-      }
-
-      .actions {
+      .btn-row {
         grid-template-columns: 1fr;
       }
     }
   </style>
 </head>
 <body>
-  <main class="app">
-    <header class="topbar">
-      <div class="brand">
-        <div class="logo" aria-hidden="true">七</div>
-        <div>
-          <h1>七巧板合作拼图练习</h1>
-          <p class="subtitle">两人一组，合作移动七块拼板，把它们拼到灰色目标轮廓里。</p>
-        </div>
+  <div class="app">
+    <header>
+      <div>
+        <h1>七巧板合作拼图闯关</h1>
+        <p class="sub">两位同学合作移动 7 块传统七巧板，完全贴合灰色外轮廓后才能进入下一关。</p>
       </div>
-      <div class="status" aria-label="当前练习状态">
-        <div class="pill" id="roundPill">第 1 / 6 道</div>
-        <div class="pill" id="piecesPill">已放好 0 / 7 块</div>
+      <div class="score">
+        <span class="pill">关卡 <strong id="levelText">1 / 10</strong></span>
+        <span class="pill">已完成 <strong id="doneText">0 / 7</strong></span>
       </div>
     </header>
 
-    <section class="layout">
-      <section class="board-card">
-        <div class="board-head">
-          <div>
-            <h2 class="board-title" id="puzzleTitle">拼图 1：正方形</h2>
-            <p class="board-note" id="puzzleNote">把下面的七块拼板拖到上方灰色轮廓中。</p>
-          </div>
-          <div class="success" id="successBadge">拼图成功</div>
-        </div>
-
-        <div class="board-wrap">
-          <svg id="board" viewBox="0 0 900 650" role="img" aria-labelledby="boardLabel">
-            <title id="boardLabel">七巧板合作拼图操作区</title>
-            <g id="targets"></g>
-            <g id="pieces"></g>
-          </svg>
-        </div>
+    <main>
+      <section class="stage-wrap" aria-label="七巧板游戏区域">
+        <canvas id="game" width="1100" height="680"></canvas>
       </section>
 
-      <aside class="side-card">
-        <section>
-          <h3 class="panel-title">课堂玩法</h3>
-          <ol class="steps">
-            <li>两名学生一起观察目标图。</li>
-            <li>合作拖动七块彩色拼板。</li>
-            <li>拼板靠近正确位置会自动吸附。</li>
-            <li>全部放好后，本题即完成。</li>
-            <li>下一组上来后，直接点下一道。</li>
-          </ol>
-        </section>
-
-        <section class="progress-block" aria-label="拼图进度">
-          <div class="progress-row">
-            <span id="progressText">完成 0 / 7 块</span>
-            <span id="completeText">0%</span>
+      <aside>
+        <section class="panel">
+          <h2>当前图形</h2>
+          <p class="level-name" id="levelName">17 小鸟</p>
+          <div class="progress" aria-label="完成进度">
+            <div class="bar" id="bar"></div>
           </div>
-          <div class="progress" aria-hidden="true"><span id="progressBar"></span></div>
+          <p class="hint">拖动左侧彩色七巧板去填满右侧灰色整体剪影。选中一块后可旋转或翻面，靠近正确位置会自动吸附。</p>
         </section>
 
-        <p class="tip" id="tipText">提示：先看整体轮廓，再分工移动大三角和小三角。</p>
+        <section class="panel">
+          <h2>操作</h2>
+          <div class="btn-row">
+            <button class="secondary" id="rotLeft">左转 45°</button>
+            <button class="secondary" id="rotRight">右转 45°</button>
+            <button class="secondary" id="flip">翻面</button>
+            <button class="secondary" id="reset">重置本关</button>
+          </div>
+          <button class="next" id="next" disabled>下一道</button>
+        </section>
 
-        <div class="actions">
-          <button class="success-button" id="finishButton" type="button">完成本题</button>
-          <button class="primary-button" id="nextButton" type="button" disabled>下一道</button>
-          <button class="ghost-button" id="resetButton" type="button">重置本题</button>
-          <button class="ghost-button" id="prevButton" type="button">上一道</button>
-        </div>
+        <section class="panel">
+          <h2>双人合作</h2>
+          <div class="players">
+            <div class="player">
+              <span class="badge a">A</span>
+              <p><strong>A 同学</strong><br>建议负责红、黄、橙三块大形状，先搭主体。</p>
+            </div>
+            <div class="player">
+              <span class="badge b">B</span>
+              <p><strong>B 同学</strong><br>建议负责蓝、紫、绿、浅粉四块，补齐细节。</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <p class="status" id="status">先观察外轮廓，再一起商量每块应该放在哪里。</p>
+        </section>
       </aside>
-    </section>
-  </main>
+    </main>
+  </div>
 
   <script>
-    const colors = ["#1769ff", "#ff6b55", "#ffcb42", "#28b67e", "#8b5cf6", "#22b8cf", "#ff9f1c"];
+    const canvas = document.getElementById("game");
+    const ctx = canvas.getContext("2d");
+    const levelText = document.getElementById("levelText");
+    const doneText = document.getElementById("doneText");
+    const levelName = document.getElementById("levelName");
+    const bar = document.getElementById("bar");
+    const statusEl = document.getElementById("status");
+    const nextBtn = document.getElementById("next");
 
-    const puzzles = [
-      {
-        title: "正方形",
-        note: "经典七巧板正方形，适合第一组熟悉拖动和吸附。",
-        tip: "提示：先把四个角补出来，中间再慢慢调整。",
-        pieces: [
-          "70,70 210,70 70,210",
-          "350,70 350,210 210,70",
-          "70,210 140,140 210,210",
-          "210,70 280,140 210,210 140,140",
-          "280,140 350,210 280,280 210,210",
-          "70,210 210,210 210,350",
-          "210,350 350,210 350,350"
-        ]
-      },
-      {
-        title: "小房子",
-        note: "观察屋顶、墙体和底部，适合两人分工拼上半部分和下半部分。",
-        tip: "提示：屋顶先拼出来，房子的主体会更容易对齐。",
-        pieces: [
-          "210,58 322,170 98,170",
-          "98,170 210,282 98,282",
-          "322,170 322,282 210,282",
-          "154,226 210,170 266,226 210,282",
-          "98,282 154,338 98,338",
-          "322,282 322,338 266,338",
-          "154,338 266,338 210,282"
-        ]
-      },
-      {
-        title: "小火箭",
-        note: "找到尖尖的头部、左右小翼和尾部火焰。",
-        tip: "提示：先放火箭头，再对称地摆左右两侧。",
-        pieces: [
-          "210,38 278,142 142,142",
-          "142,142 210,210 142,278 74,210",
-          "278,142 346,210 278,278 210,210",
-          "142,278 210,210 278,278 210,346",
-          "74,210 142,278 74,310",
-          "346,210 278,278 346,310",
-          "174,346 210,310 246,346 210,382"
-        ]
-      },
-      {
-        title: "小鸟",
-        note: "注意鸟嘴、翅膀和尾巴的位置关系。",
-        tip: "提示：鸟嘴在最右边，翅膀是两块较大的三角形。",
-        pieces: [
-          "72,176 210,96 176,232",
-          "210,96 348,176 244,232",
-          "176,232 210,164 244,232",
-          "176,232 244,232 244,300 176,300",
-          "244,300 312,334 244,368",
-          "176,300 108,334 176,368",
-          "348,176 382,144 382,208"
-        ]
-      },
-      {
-        title: "小猫",
-        note: "先找两只耳朵，再拼身体和尾巴。",
-        tip: "提示：两个顶部小三角就是耳朵，尾巴在右侧。",
-        pieces: [
-          "120,72 176,128 64,128",
-          "244,128 300,72 356,128",
-          "176,128 244,128 244,196 176,196",
-          "176,196 244,196 312,300 108,300",
-          "108,300 210,196 210,366",
-          "210,366 312,300 312,366",
-          "312,300 372,270 344,338"
-        ]
-      },
-      {
-        title: "小鱼",
-        note: "鱼头、身体和尾巴都比较清楚，适合作为轮换练习。",
-        tip: "提示：尾巴在左边，鱼头在右边，先定方向再移动。",
-        pieces: [
-          "68,210 154,130 154,290",
-          "154,130 292,210 154,290",
-          "292,210 376,150 376,270",
-          "154,130 222,130 222,210 154,210",
-          "154,210 222,210 154,290",
-          "222,210 292,210 222,280",
-          "68,210 28,170 28,250"
-        ]
-      }
+    const W = 1100;
+    const H = 680;
+    const S = 66;
+    const R2 = Math.SQRT2;
+    const pieces = [
+      { id: "largeA", label: "大三角 1", owner: "A", color: "#f42121", points: [[0, 0], [S * 2, 0], [0, S * 2]] },
+      { id: "largeB", label: "大三角 2", owner: "A", color: "#ffd817", points: [[0, 0], [S * 2, 0], [0, S * 2]] },
+      { id: "medium", label: "中三角", owner: "A", color: "#ff7a21", points: [[0, 0], [S * R2, 0], [0, S * R2]] },
+      { id: "smallA", label: "小三角 1", owner: "B", color: "#18a8d8", points: [[0, 0], [S, 0], [0, S]] },
+      { id: "smallB", label: "小三角 2", owner: "B", color: "#f7cdb6", points: [[0, 0], [S, 0], [0, S]] },
+      { id: "square", label: "正方形", owner: "B", color: "#78bd04", points: [[0, 0], [S, 0], [S, S], [0, S]] },
+      { id: "para", label: "平行四边形", owner: "B", color: "#713fbd", points: [[0, 0], [S * R2, 0], [S * R2 + S / R2, S / R2], [S / R2, S / R2]] }
     ];
 
-    const startPositions = [
-      { x: 110, y: 505 },
-      { x: 300, y: 505 },
-      { x: 485, y: 505 },
-      { x: 675, y: 505 },
-      { x: 160, y: 600 },
-      { x: 395, y: 600 },
-      { x: 620, y: 600 }
-    ];
-
-    const targetOffset = { x: 250, y: 35 };
-    const trayOffset = { x: 0, y: 0 };
-    const snapDistance = 34;
-
-    const board = document.querySelector("#board");
-    const targetsEl = document.querySelector("#targets");
-    const piecesEl = document.querySelector("#pieces");
-    const roundPill = document.querySelector("#roundPill");
-    const piecesPill = document.querySelector("#piecesPill");
-    const puzzleTitle = document.querySelector("#puzzleTitle");
-    const puzzleNote = document.querySelector("#puzzleNote");
-    const progressText = document.querySelector("#progressText");
-    const completeText = document.querySelector("#completeText");
-    const progressBar = document.querySelector("#progressBar");
-    const successBadge = document.querySelector("#successBadge");
-    const tipText = document.querySelector("#tipText");
-    const finishButton = document.querySelector("#finishButton");
-    const nextButton = document.querySelector("#nextButton");
-    const resetButton = document.querySelector("#resetButton");
-    const prevButton = document.querySelector("#prevButton");
-
-    const state = {
-      puzzleIndex: 0,
-      active: null,
-      pieces: []
+    const startPos = {
+      largeA: { x: 42, y: 72, angle: 0, flip: 1 },
+      largeB: { x: 158, y: 72, angle: 90, flip: 1 },
+      medium: { x: 76, y: 300, angle: -45, flip: 1 },
+      smallA: { x: 46, y: 514, angle: 0, flip: 1 },
+      smallB: { x: 176, y: 510, angle: 90, flip: 1 },
+      square: { x: 98, y: 420, angle: 45, flip: 1 },
+      para: { x: 132, y: 222, angle: 0, flip: 1 }
     };
 
-    function makePolygon(points, className, fill) {
-      const polygon = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
-      polygon.setAttribute("points", points);
-      polygon.setAttribute("class", className);
-      if (fill) polygon.setAttribute("fill", fill);
-      return polygon;
+    const sourceLevels = [
+      { no: 1, name: "正方形", tans: [[0, 1, 12, 12], [0, 7, 12, 12], [1, 0, 0, 0], [2, 3, 6, 18], [2, 5, 12, 12], [3, 7, 0, 12], [5, 4, 24, 0]] },
+      { no: 2, name: "天鹅", tans: [[0, 6, 10.970563, 38.485281], [0, 5, 22.970563, 33.514719], [1, 7, 2.485281, 30], [2, 4, 8.485281, 8.485281], [2, 3, 8.485281, 24], [3, 1, 8.485281, 12], [5, 2, 8.485281, 0]] },
+      { no: 3, name: "小猫", tans: [[0, 3, 34.970563, 21.514719], [0, 4, 34.970563, 38.485281], [1, 7, 14.485281, 18], [2, 3, 6, 6], [2, 7, 6, 6], [3, 1, 6, 6], [4, 7, 6, 18]] },
+      { no: 4, name: "小鸟", tans: [[0, 1, 24, 0], [0, 5, 36, 12], [1, 3, 37.455844, 20.485281], [2, 1, 6, 6], [2, 2, 20.485281, 12], [3, 0, 20.485281, 12], [4, 0, 28.970563, 12]] },
+      { no: 5, name: "山峰", tans: [[0, 4, 16.970563, 20.485281], [0, 6, 33.941125, 20.485281], [1, 7, 25.455844, 12], [2, 6, 16.970563, 20.485281], [2, 6, 25.455844, 20.485281], [3, 1, 25.455844, 0], [4, 1, 16.970563, 3.514719]] },
+      { no: 6, name: "箭头", tans: [[0, 0, 16.970563, 0], [0, 6, 16.970563, 33.941125], [1, 7, 0, 16.970563], [2, 2, 16.970563, 25.455844], [2, 4, 16.970563, 16.970563], [3, 0, 25.455844, 16.970563], [5, 3, 16.970563, 0]] },
+      { no: 7, name: "大写 T", tans: [[0, 2, 16.970563, 0], [0, 3, 25.455844, 25.455844], [1, 0, 25.455844, 0], [2, 6, 0, 50.911688], [2, 2, 25.455844, 50.911688], [3, 0, 16.970563, 0], [4, 1, 16.970563, 50.911688]] },
+      { no: 8, name: "大写 G", tans: [[0, 7, 0, 12], [0, 6, 0, 28.970563], [1, 0, 12, 0], [2, 5, 10.970563, 34.970563], [2, 6, 21.941125, 12], [3, 6, 19.455844, 68.911688], [4, 7, 10.970563, 34.970563]] },
+      { no: 9, name: "游戏图形", tans: [[0, 2, 5, 2.171573], [0, 4, 5, 7.828427], [1, 3, 7.828427, 5], [2, 0, 5, 6.414214], [2, 6, 5, 5], [3, 0, 5, 5], [4, 5, 6.414214, 5]] },
+      { no: 10, name: "菱形", rotate: 45, tans: [[0, 1, 12, 12], [0, 7, 12, 12], [1, 0, 0, 0], [2, 3, 6, 18], [2, 5, 12, 12], [3, 7, 0, 12], [5, 4, 24, 0]] }
+    ];
+
+    const sourcePieceIds = ["largeA", "largeB", "medium", "smallA", "smallB", "square", "para"];
+    const interchangeable = {
+      largeA: ["largeA", "largeB"],
+      largeB: ["largeA", "largeB"],
+      smallA: ["smallA", "smallB"],
+      smallB: ["smallA", "smallB"],
+      medium: ["medium"],
+      square: ["square"],
+      para: ["para"]
+    };
+    const sourceScale = S / (6 * R2);
+    const targetCenter = { x: 710, y: 350 };
+    const levels = sourceLevels.map(makeLevel);
+
+    function makeLevel(source) {
+      const targets = {};
+      source.tans.forEach(([tanType, orientation, x, y], index) => {
+        const pieceId = sourcePieceIds[index];
+        const flippedPara = tanType === 5;
+        targets[pieceId] = {
+          x: x * sourceScale,
+          y: y * sourceScale,
+          angle: normalizeAngle(orientation * 45 + (flippedPara ? -180 : 0)),
+          flip: flippedPara ? -1 : 1
+        };
+      });
+
+      if (source.rotate) {
+        const center = targetBBoxCenter(targets);
+        Object.values(targets).forEach((target) => {
+          rotateTarget(target, center, source.rotate);
+        });
+      }
+
+      const center = targetBBoxCenter(targets);
+      const dx = targetCenter.x - center.x;
+      const dy = targetCenter.y - center.y;
+      Object.values(targets).forEach((target) => {
+        target.x += dx;
+        target.y += dy;
+      });
+
+      return { no: source.no, name: source.name, targets };
     }
 
-    function pointBounds(points) {
-      const coords = points.split(" ").map((pair) => pair.split(",").map(Number));
-      const xs = coords.map((coord) => coord[0]);
-      const ys = coords.map((coord) => coord[1]);
-      const minX = Math.min(...xs);
-      const maxX = Math.max(...xs);
-      const minY = Math.min(...ys);
-      const maxY = Math.max(...ys);
+    function targetBBoxCenter(targets) {
+      const all = pieces.flatMap((piece) => polygonFor(piece, targets[piece.id]));
+      const xs = all.map((p) => p[0]);
+      const ys = all.map((p) => p[1]);
       return {
-        cx: minX + (maxX - minX) / 2,
-        cy: minY + (maxY - minY) / 2
+        x: (Math.min(...xs) + Math.max(...xs)) / 2,
+        y: (Math.min(...ys) + Math.max(...ys)) / 2
       };
     }
 
-    function setTransform(item) {
-      item.node.setAttribute("transform", `translate(${item.x} ${item.y})`);
+    function rotateTarget(target, center, degrees) {
+      const rad = degrees * Math.PI / 180;
+      const dx = target.x - center.x;
+      const dy = target.y - center.y;
+      target.x = center.x + dx * Math.cos(rad) - dy * Math.sin(rad);
+      target.y = center.y + dx * Math.sin(rad) + dy * Math.cos(rad);
+      target.angle = normalizeAngle(target.angle + degrees);
     }
 
-    function boardPoint(event) {
-      const point = board.createSVGPoint();
-      point.x = event.clientX;
-      point.y = event.clientY;
-      return point.matrixTransform(board.getScreenCTM().inverse());
+    let levelIndex = 0;
+    let state = [];
+    let selectedId = null;
+    let drag = null;
+    let won = false;
+
+    function normalizeAngle(angle) {
+      let a = angle % 360;
+      if (a < 0) a += 360;
+      return Math.round(a * 10) / 10;
+    }
+
+    function angleDiff(a, b) {
+      const d = Math.abs(normalizeAngle(a) - normalizeAngle(b));
+      return Math.min(d, 360 - d);
+    }
+
+    function transformPoint(pt, item) {
+      const rad = item.angle * Math.PI / 180;
+      const sx = item.flip || 1;
+      const x = pt[0] * sx;
+      const y = pt[1];
+      return [
+        item.x + x * Math.cos(rad) - y * Math.sin(rad),
+        item.y + x * Math.sin(rad) + y * Math.cos(rad)
+      ];
+    }
+
+    function polygonFor(piece, item) {
+      return piece.points.map((pt) => transformPoint(pt, item));
+    }
+
+    function pointInPoly(x, y, poly) {
+      let inside = false;
+      for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+        const xi = poly[i][0], yi = poly[i][1];
+        const xj = poly[j][0], yj = poly[j][1];
+        const intersect = ((yi > y) !== (yj > y)) && x < (xj - xi) * (y - yi) / (yj - yi) + xi;
+        if (intersect) inside = !inside;
+      }
+      return inside;
+    }
+
+    function drawPoly(poly, fill, stroke, width = 2) {
+      ctx.beginPath();
+      poly.forEach(([x, y], i) => i ? ctx.lineTo(x, y) : ctx.moveTo(x, y));
+      ctx.closePath();
+      ctx.fillStyle = fill;
+      ctx.fill();
+      if (stroke) {
+        ctx.lineWidth = width;
+        ctx.strokeStyle = stroke;
+        ctx.stroke();
+      }
+    }
+
+    function pathPoly(poly) {
+      ctx.beginPath();
+      poly.forEach(([x, y], i) => i ? ctx.lineTo(x, y) : ctx.moveTo(x, y));
+      ctx.closePath();
+    }
+
+    function fitCanvas() {
+      const rect = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = Math.round(rect.width * dpr);
+      canvas.height = Math.round(rect.width * H / W * dpr);
+      ctx.setTransform(canvas.width / W, 0, 0, canvas.height / H, 0, 0);
+      draw();
+    }
+
+    function loadLevel(index) {
+      levelIndex = index;
+      won = false;
+      selectedId = null;
+      const level = levels[levelIndex];
+      state = pieces.map((piece) => ({
+        ...piece,
+        ...startPos[piece.id],
+        snapped: false,
+        snappedTargetId: null
+      }));
+      levelName.textContent = `${level.no} ${level.name}`;
+      levelText.textContent = `${levelIndex + 1} / ${levels.length}`;
+      nextBtn.disabled = true;
+      statusEl.className = "status";
+      statusEl.textContent = "先观察外轮廓，再一起商量每块应该放在哪里。";
+      updateProgress();
+      draw();
     }
 
     function updateProgress() {
-      const done = state.pieces.filter((piece) => piece.snapped).length;
-      const percent = Math.round((done / 7) * 100);
-      piecesPill.textContent = `已放好 ${done} / 7 块`;
-      progressText.textContent = `完成 ${done} / 7 块`;
-      completeText.textContent = `${percent}%`;
-      progressBar.style.width = `${percent}%`;
-
-      const completed = done === 7;
-      successBadge.classList.toggle("show", completed);
-      nextButton.disabled = !completed;
-      finishButton.textContent = completed ? "本题已完成" : "完成本题";
+      const done = state.filter((p) => p.snapped).length;
+      doneText.textContent = `${done} / ${pieces.length}`;
+      bar.style.width = `${done / pieces.length * 100}%`;
     }
 
-    function completePuzzle() {
-      state.pieces.forEach((piece) => {
-        piece.x = piece.targetX;
-        piece.y = piece.targetY;
-        piece.snapped = true;
-        piece.node.classList.add("snapped");
-        setTransform(piece);
+    function drawBackground() {
+      ctx.clearRect(0, 0, W, H);
+      ctx.save();
+      ctx.fillStyle = "#e7f4f6";
+      ctx.fillRect(304, 0, 2, H);
+      ctx.fillStyle = "#1d5663";
+      ctx.font = "800 18px Microsoft YaHei, sans-serif";
+      ctx.fillText("七巧板材料区", 48, 36);
+      ctx.fillText("整体目标剪影", 512, 36);
+      ctx.font = "14px Microsoft YaHei, sans-serif";
+      ctx.fillStyle = "#66818b";
+      ctx.fillText("A、B 两位同学可分别负责自己的颜色块", 48, 60);
+      ctx.fillText("只看完整外轮廓，用 7 块彩色板填充", 512, 60);
+
+      ctx.setLineDash([8, 9]);
+      ctx.strokeStyle = "#d6e6eb";
+      ctx.lineWidth = 2;
+      ctx.strokeRect(26, 82, 248, 548);
+      ctx.strokeRect(386, 82, 650, 548);
+      ctx.setLineDash([]);
+      ctx.restore();
+    }
+
+    function drawTargets() {
+      const level = levels[levelIndex];
+      ctx.save();
+      ctx.shadowColor = "transparent";
+      ctx.shadowBlur = 0;
+      ctx.shadowOffsetY = 0;
+      ctx.fillStyle = "#8f9497";
+      ctx.beginPath();
+      pieces.forEach((piece) => {
+        const target = level.targets[piece.id];
+        const poly = polygonFor(piece, target);
+        poly.forEach(([x, y], i) => i ? ctx.lineTo(x, y) : ctx.moveTo(x, y));
+        ctx.closePath();
       });
-      updateProgress();
+      ctx.fill("nonzero");
+      ctx.restore();
+
     }
 
-    function resetPuzzle() {
-      renderPuzzle(state.puzzleIndex);
-    }
+    function drawPieces() {
+      state.forEach((item) => {
+        const poly = polygonFor(item, item);
+        ctx.save();
+        ctx.shadowColor = item.snapped ? "transparent" : "rgba(20, 55, 70, 0.18)";
+        ctx.shadowBlur = item.snapped ? 0 : selectedId === item.id ? 12 : 6;
+        ctx.shadowOffsetY = item.snapped ? 0 : selectedId === item.id ? 5 : 3;
+        const stroke = item.snapped ? "rgba(255, 255, 255, 0.62)" : selectedId === item.id ? "#12313d" : "rgba(35, 47, 52, 0.35)";
+        const width = item.snapped ? 1 : selectedId === item.id ? 3 : 1.5;
+        drawPoly(poly, item.color, stroke, width);
+        ctx.restore();
 
-    function renderPuzzle(index) {
-      const puzzle = puzzles[index];
-      state.puzzleIndex = index;
-      state.active = null;
-      state.pieces = [];
-      targetsEl.innerHTML = "";
-      piecesEl.innerHTML = "";
-
-      roundPill.textContent = `第 ${index + 1} / ${puzzles.length} 道`;
-      puzzleTitle.textContent = `拼图 ${index + 1}：${puzzle.title}`;
-      puzzleNote.textContent = puzzle.note;
-      tipText.textContent = puzzle.tip;
-      successBadge.classList.remove("show");
-      prevButton.disabled = index === 0;
-      nextButton.textContent = index === puzzles.length - 1 ? "回到第一道" : "下一道";
-
-      puzzle.pieces.forEach((points, pieceIndex) => {
-        const target = makePolygon(points, "target-piece");
-        target.setAttribute("transform", `translate(${targetOffset.x} ${targetOffset.y})`);
-        targetsEl.appendChild(target);
-
-        const node = makePolygon(points, "piece", colors[pieceIndex]);
-        const start = startPositions[pieceIndex];
-        const bounds = pointBounds(points);
-        const item = {
-          id: pieceIndex,
-          node,
-          x: start.x - bounds.cx,
-          y: start.y - bounds.cy,
-          startX: start.x - bounds.cx,
-          startY: start.y - bounds.cy,
-          targetX: targetOffset.x,
-          targetY: targetOffset.y,
-          snapped: false
-        };
-        setTransform(item);
-        node.dataset.index = pieceIndex;
-        piecesEl.appendChild(node);
-        state.pieces.push(item);
+        const center = centroid(poly);
+        ctx.save();
+        ctx.fillStyle = "rgba(255,255,255,0.85)";
+        ctx.beginPath();
+        ctx.arc(center[0], center[1], 15, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = item.owner === "A" ? "#c75212" : "#0f789e";
+        ctx.font = "900 15px Microsoft YaHei, sans-serif";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(item.owner, center[0], center[1] + 1);
+        ctx.restore();
       });
-
-      updateProgress();
     }
 
-    function startDrag(event) {
-      const node = event.target.closest(".piece");
-      if (!node) return;
+    function centroid(poly) {
+      const sum = poly.reduce((acc, p) => [acc[0] + p[0], acc[1] + p[1]], [0, 0]);
+      return [sum[0] / poly.length, sum[1] / poly.length];
+    }
 
-      const piece = state.pieces[Number(node.dataset.index)];
-      if (!piece || piece.snapped) return;
+    function drawWin() {
+      if (!won) return;
+      ctx.save();
+      ctx.fillStyle = "rgba(255, 255, 255, 0.76)";
+      ctx.fillRect(386, 82, 650, 548);
+      ctx.fillStyle = "#21a66b";
+      ctx.font = "900 42px Microsoft YaHei, sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("闯关成功！", 710, 300);
+      ctx.fillStyle = "#31525d";
+      ctx.font = "700 20px Microsoft YaHei, sans-serif";
+      ctx.fillText(levelIndex === levels.length - 1 ? "10 关全部完成，可以重新挑战。" : "现在可以点击右侧“下一道”。", 710, 342);
+      ctx.restore();
+    }
 
-      const pointer = boardPoint(event);
-      state.active = {
-        piece,
-        pointerId: event.pointerId,
-        dx: pointer.x - piece.x,
-        dy: pointer.y - piece.y
+    function drawSelectedGuide() {
+      const item = selectedPiece();
+      if (!item) return;
+      const level = levels[levelIndex];
+      const candidates = availableTargetsFor(item);
+      ctx.save();
+      ctx.setLineDash([9, 7]);
+      ctx.lineWidth = 4;
+      ctx.strokeStyle = item.color;
+      ctx.fillStyle = "rgba(255, 255, 255, 0.30)";
+      candidates.forEach((targetId) => {
+        const targetPiece = pieces.find((piece) => piece.id === targetId);
+        const poly = polygonFor(targetPiece, level.targets[targetId]);
+        drawPoly(poly, "rgba(255,255,255,0.22)", item.color, 4);
+      });
+      ctx.restore();
+    }
+
+    function draw() {
+      drawBackground();
+      drawTargets();
+      drawPieces();
+      drawWin();
+    }
+
+    function canvasPoint(evt) {
+      const rect = canvas.getBoundingClientRect();
+      return {
+        x: (evt.clientX - rect.left) * W / rect.width,
+        y: (evt.clientY - rect.top) * H / rect.height
       };
-      node.classList.add("dragging");
-      piecesEl.appendChild(node);
-      node.setPointerCapture(event.pointerId);
     }
 
-    function moveDrag(event) {
-      if (!state.active || state.active.pointerId !== event.pointerId) return;
-
-      const pointer = boardPoint(event);
-      const piece = state.active.piece;
-      piece.x = pointer.x - state.active.dx;
-      piece.y = pointer.y - state.active.dy;
-      setTransform(piece);
-    }
-
-    function endDrag(event) {
-      if (!state.active || state.active.pointerId !== event.pointerId) return;
-
-      const piece = state.active.piece;
-      const distance = Math.hypot(piece.x - piece.targetX, piece.y - piece.targetY);
-      piece.node.classList.remove("dragging");
-
-      if (distance < snapDistance) {
-        piece.x = piece.targetX;
-        piece.y = piece.targetY;
-        piece.snapped = true;
-        piece.node.classList.add("snapped");
-        setTransform(piece);
+    function pickPiece(x, y) {
+      for (let i = state.length - 1; i >= 0; i--) {
+        const item = state[i];
+        if (item.snapped) continue;
+        if (pointInPoly(x, y, polygonFor(item, item))) return item;
       }
+      return null;
+    }
 
-      state.active = null;
+    function bringToFront(item) {
+      state = state.filter((p) => p.id !== item.id).concat(item);
+    }
+
+    function trySnap(item) {
+      const targetId = bestTargetFor(item);
+      if (targetId) {
+        const target = levels[levelIndex].targets[targetId];
+        item.x = target.x;
+        item.y = target.y;
+        item.angle = target.angle;
+        item.flip = target.flip;
+        item.snapped = true;
+        item.snappedTargetId = targetId;
+        selectedId = null;
+        statusEl.className = "status";
+        statusEl.textContent = `${item.label} 已贴合。继续合作完成剩下的形状。`;
+        checkWin();
+      }
+    }
+
+    function availableTargetsFor(item) {
+      const occupied = new Set(state.filter((piece) => piece.snapped).map((piece) => piece.snappedTargetId));
+      return interchangeable[item.id].filter((targetId) => !occupied.has(targetId));
+    }
+
+    function bestTargetFor(item) {
+      let best = null;
+      let bestDistance = Infinity;
+      availableTargetsFor(item).forEach((targetId) => {
+        const distance = targetDistance(item, targetId);
+        if (distance < 78 && distance < bestDistance) {
+          best = targetId;
+          bestDistance = distance;
+        }
+      });
+      return best;
+    }
+
+    function targetDistance(item, targetId) {
+      const targetPiece = pieces.find((piece) => piece.id === targetId);
+      const target = levels[levelIndex].targets[targetId];
+      const itemCenter = centroid(polygonFor(item, item));
+      const targetCenterPoint = centroid(polygonFor(targetPiece, target));
+      return Math.hypot(itemCenter[0] - targetCenterPoint[0], itemCenter[1] - targetCenterPoint[1]);
+    }
+
+    function orientationMatches(item, target) {
+      if (item.id === "square") {
+        return angleDiff(item.angle, target.angle) < 13
+          || angleDiff(item.angle + 90, target.angle) < 13
+          || angleDiff(item.angle + 180, target.angle) < 13
+          || angleDiff(item.angle + 270, target.angle) < 13;
+      }
+      return angleDiff(item.angle, target.angle) < 13;
+    }
+
+    function checkWin() {
       updateProgress();
+      if (state.every((p) => p.snapped)) {
+        won = true;
+        nextBtn.disabled = false;
+        statusEl.className = "status done";
+        statusEl.textContent = levelIndex === levels.length - 1 ? "全部关卡完成！" : "本关成功，可以进入下一道。";
+      }
     }
 
-    function goNext() {
-      const next = state.puzzleIndex === puzzles.length - 1 ? 0 : state.puzzleIndex + 1;
-      renderPuzzle(next);
+    function selectedPiece() {
+      return state.find((p) => p.id === selectedId && !p.snapped);
     }
 
-    function goPrev() {
-      if (state.puzzleIndex > 0) renderPuzzle(state.puzzleIndex - 1);
-    }
+    canvas.addEventListener("pointerdown", (evt) => {
+      const p = canvasPoint(evt);
+      const item = pickPiece(p.x, p.y);
+      if (!item) return;
+      selectedId = item.id;
+      bringToFront(item);
+      drag = { id: item.id, dx: p.x - item.x, dy: p.y - item.y };
+      canvas.classList.add("dragging");
+      canvas.setPointerCapture(evt.pointerId);
+      draw();
+    });
 
-    board.addEventListener("pointerdown", startDrag);
-    board.addEventListener("pointermove", moveDrag);
-    board.addEventListener("pointerup", endDrag);
-    board.addEventListener("pointercancel", endDrag);
-    finishButton.addEventListener("click", completePuzzle);
-    nextButton.addEventListener("click", goNext);
-    resetButton.addEventListener("click", resetPuzzle);
-    prevButton.addEventListener("click", goPrev);
+    canvas.addEventListener("pointermove", (evt) => {
+      if (!drag) return;
+      const p = canvasPoint(evt);
+      const item = state.find((piece) => piece.id === drag.id);
+      item.x = p.x - drag.dx;
+      item.y = p.y - drag.dy;
+      draw();
+    });
 
-    renderPuzzle(0);
+    canvas.addEventListener("pointerup", (evt) => {
+      if (!drag) return;
+      const item = state.find((piece) => piece.id === drag.id);
+      trySnap(item);
+      drag = null;
+      canvas.classList.remove("dragging");
+      draw();
+    });
+
+    canvas.addEventListener("pointercancel", () => {
+      drag = null;
+      canvas.classList.remove("dragging");
+    });
+
+    document.getElementById("rotLeft").addEventListener("click", () => {
+      const item = selectedPiece();
+      if (!item) return;
+      item.angle = normalizeAngle(item.angle - 45);
+      trySnap(item);
+      draw();
+    });
+
+    document.getElementById("rotRight").addEventListener("click", () => {
+      const item = selectedPiece();
+      if (!item) return;
+      item.angle = normalizeAngle(item.angle + 45);
+      trySnap(item);
+      draw();
+    });
+
+    document.getElementById("flip").addEventListener("click", () => {
+      const item = selectedPiece();
+      if (!item) return;
+      item.flip *= -1;
+      trySnap(item);
+      draw();
+    });
+
+    document.getElementById("reset").addEventListener("click", () => {
+      loadLevel(levelIndex);
+    });
+
+    nextBtn.addEventListener("click", () => {
+      if (nextBtn.disabled) return;
+      if (levelIndex === levels.length - 1) {
+        loadLevel(0);
+      } else {
+        loadLevel(levelIndex + 1);
+      }
+    });
+
+    window.addEventListener("keydown", (evt) => {
+      if (evt.key === "q" || evt.key === "Q" || evt.key === "ArrowLeft") {
+        document.getElementById("rotLeft").click();
+      }
+      if (evt.key === "e" || evt.key === "E" || evt.key === "ArrowRight") {
+        document.getElementById("rotRight").click();
+      }
+      if (evt.key === "f" || evt.key === "F") {
+        document.getElementById("flip").click();
+      }
+    });
+
+    window.addEventListener("resize", fitCanvas);
+    loadLevel(0);
+    fitCanvas();
   </script>
 </body>
 </html>
